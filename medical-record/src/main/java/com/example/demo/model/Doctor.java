@@ -14,18 +14,12 @@ public class Doctor {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "УИН е задължителен")
-    @Pattern(regexp = "^\\d{10}$", message = "УИН трябва да съдържа точно 10 цифри")
     @Column(unique = true, nullable = false)
     private String uin;
 
-    @NotBlank(message = "Името е задължително")
-    @Size(min = 2, max = 100, message = "Името трябва да е между 2 и 100 символа")
     @Column(nullable = false)
     private String name;
 
-    @NotBlank(message = "Специалността е задължителна")
-    @Size(min = 2, max = 100, message = "Специалността трябва да е между 2 и 100 символа")
     @Column(nullable = false)
     private String specialty;
 

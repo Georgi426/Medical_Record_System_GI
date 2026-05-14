@@ -55,9 +55,15 @@ class DoctorControllerTest {
         doctor.setSpecialty("Хирургия");
         doctor.setGeneralPractitioner(false);
 
+        com.example.demo.dto.DoctorDTO dto = new com.example.demo.dto.DoctorDTO();
+        dto.setName("Д-р Георгиев");
+        dto.setUin("1234567890");
+        dto.setSpecialty("Хирургия");
+        dto.setGeneralPractitioner(false);
+
         when(doctorRepository.save(any(Doctor.class))).thenReturn(doctor);
 
-        Doctor result = doctorController.create(doctor);
+        Doctor result = doctorController.create(dto);
         assertNotNull(result);
         assertEquals("Д-р Георгиев", result.getName());
         assertEquals("Хирургия", result.getSpecialty());
@@ -72,16 +78,16 @@ class DoctorControllerTest {
         existing.setUin("1234567890");
         existing.setGeneralPractitioner(false);
 
-        Doctor updated = new Doctor();
-        updated.setName("Д-р Иванов-Updated");
-        updated.setSpecialty("Неврология");
-        updated.setUin("0987654321");
-        updated.setGeneralPractitioner(true);
+        com.example.demo.dto.DoctorDTO updatedDto = new com.example.demo.dto.DoctorDTO();
+        updatedDto.setName("Д-р Иванов-Updated");
+        updatedDto.setSpecialty("Неврология");
+        updatedDto.setUin("0987654321");
+        updatedDto.setGeneralPractitioner(true);
 
         when(doctorRepository.findById(1L)).thenReturn(Optional.of(existing));
         when(doctorRepository.save(any(Doctor.class))).thenReturn(existing);
 
-        Doctor result = doctorController.update(1L, updated);
+        Doctor result = doctorController.update(1L, updatedDto);
         assertEquals("Д-р Иванов-Updated", result.getName());
         assertEquals("Неврология", result.getSpecialty());
         assertTrue(result.isGeneralPractitioner());

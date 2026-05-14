@@ -39,16 +39,19 @@ public class DiagnosisController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
-    public Diagnosis create(@Valid @RequestBody Diagnosis diagnosis) {
+    public Diagnosis create(@Valid @RequestBody com.example.demo.dto.DiagnosisDTO dto) {
+        Diagnosis diagnosis = new Diagnosis();
+        diagnosis.setName(dto.getName());
+        diagnosis.setDescription(dto.getDescription());
         return diagnosisRepository.save(diagnosis);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
-    public Diagnosis update(@PathVariable Long id, @Valid @RequestBody Diagnosis diagnosisDetails) {
+    public Diagnosis update(@PathVariable Long id, @Valid @RequestBody com.example.demo.dto.DiagnosisDTO dto) {
         Diagnosis diagnosis = diagnosisRepository.findById(id).orElseThrow();
-        diagnosis.setName(diagnosisDetails.getName());
-        diagnosis.setDescription(diagnosisDetails.getDescription());
+        diagnosis.setName(dto.getName());
+        diagnosis.setDescription(dto.getDescription());
         return diagnosisRepository.save(diagnosis);
     }
 

@@ -46,9 +46,13 @@ class PatientControllerIntegrationTest {
     void testCreate() {
         Patient p = new Patient();
         p.setName("Мария");
+
+        com.example.demo.dto.PatientDTO dto = new com.example.demo.dto.PatientDTO();
+        dto.setName("Мария");
+
         when(patientRepository.save(any(Patient.class))).thenReturn(p);
 
-        Patient result = patientController.create(p);
+        Patient result = patientController.create(dto);
         assertNotNull(result);
         assertEquals("Мария", result.getName());
     }

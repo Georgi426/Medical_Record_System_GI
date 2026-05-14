@@ -42,10 +42,25 @@ public class AppointmentController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
-    public Appointment create(@Valid @RequestBody Appointment appointment, org.springframework.security.core.Authentication authentication) {
-        enforceDoctorOwnership(appointment.getDoctor().getId(), authentication);
-        Patient patient = patientRepository.findById(appointment.getPatient().getId())
+    public Appointment create(@Valid @RequestBody com.example.demo.dto.AppointmentDTO dto, org.springframework.security.core.Authentication authentication) {
+        enforceDoctorOwnership(dto.getDoctor().getId(), authentication);
+        Patient patient = patientRepository.findById(dto.getPatient().getId())
                 .orElseThrow(() -> new IllegalArgumentException("Невалиден пациент"));
+        
+        Appointment appointment = new Appointment();
+        appointment.setDate(dto.getDate());
+        appointment.setTreatment(dto.getTreatment());
+        appointment.setPrice(dto.getPrice());
+        
+        com.example.demo.model.Doctor doctor = new com.example.demo.model.Doctor();
+        doctor.setId(dto.getDoctor().getId());
+        appointment.setDoctor(doctor);
+        
+        appointment.setPatient(patient);
+        
+        com.example.demo.model.Diagnosis diagnosis = new com.example.demo.model.Diagnosis();
+        diagnosis.setId(dto.getDiagnosis().getId());
+        appointment.setDiagnosis(diagnosis);
         
         appointment.setPaidByNzok(patient.isInsured());
         return appointmentRepository.save(appointment);
@@ -53,18 +68,26 @@ public class AppointmentController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
-    public Appointment update(@PathVariable Long id, @Valid @RequestBody Appointment appointmentDetails, org.springframework.security.core.Authentication authentication) {
+    public Appointment update(@PathVariable Long id, @Valid @RequestBody com.example.demo.dto.AppointmentDTO dto, org.springframework.security.core.Authentication authentication) {
         Appointment appointment = appointmentRepository.findById(id).orElseThrow();
-        enforceDoctorOwnership(appointment.getDoctor().getId(), authentication);
+        enforceDoctorOwnership(dto.getDoctor().getId(), authentication);
         
-        Patient patient = patientRepository.findById(appointmentDetails.getPatient().getId()).orElseThrow();
+        Patient patient = patientRepository.findById(dto.getPatient().getId()).orElseThrow();
         
-        appointment.setDate(appointmentDetails.getDate());
-        appointment.setDoctor(appointmentDetails.getDoctor());
+        appointment.setDate(dto.getDate());
+        
+        com.example.demo.model.Doctor doctor = new com.example.demo.model.Doctor();
+        doctor.setId(dto.getDoctor().getId());
+        appointment.setDoctor(doctor);
+        
         appointment.setPatient(patient);
-        appointment.setDiagnosis(appointmentDetails.getDiagnosis());
-        appointment.setTreatment(appointmentDetails.getTreatment());
-        appointment.setPrice(appointmentDetails.getPrice());
+        
+        com.example.demo.model.Diagnosis diagnosis = new com.example.demo.model.Diagnosis();
+        diagnosis.setId(dto.getDiagnosis().getId());
+        appointment.setDiagnosis(diagnosis);
+        
+        appointment.setTreatment(dto.getTreatment());
+        appointment.setPrice(dto.getPrice());
         appointment.setPaidByNzok(patient.isInsured());
         
         return appointmentRepository.save(appointment);

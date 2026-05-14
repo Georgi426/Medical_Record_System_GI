@@ -26,18 +26,23 @@ public class DoctorController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public Doctor create(@Valid @RequestBody Doctor doctor) {
+    public Doctor create(@Valid @RequestBody com.example.demo.dto.DoctorDTO dto) {
+        Doctor doctor = new Doctor();
+        doctor.setName(dto.getName());
+        doctor.setSpecialty(dto.getSpecialty());
+        doctor.setUin(dto.getUin());
+        doctor.setGeneralPractitioner(dto.isGeneralPractitioner());
         return doctorRepository.save(doctor);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public Doctor update(@PathVariable Long id, @Valid @RequestBody Doctor doctorDetails) {
+    public Doctor update(@PathVariable Long id, @Valid @RequestBody com.example.demo.dto.DoctorDTO dto) {
         Doctor doctor = doctorRepository.findById(id).orElseThrow();
-        doctor.setName(doctorDetails.getName());
-        doctor.setSpecialty(doctorDetails.getSpecialty());
-        doctor.setUin(doctorDetails.getUin());
-        doctor.setGeneralPractitioner(doctorDetails.isGeneralPractitioner());
+        doctor.setName(dto.getName());
+        doctor.setSpecialty(dto.getSpecialty());
+        doctor.setUin(dto.getUin());
+        doctor.setGeneralPractitioner(dto.isGeneralPractitioner());
         return doctorRepository.save(doctor);
     }
 

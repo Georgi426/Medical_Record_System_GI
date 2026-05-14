@@ -27,18 +27,33 @@ public class PatientController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public Patient create(@Valid @RequestBody Patient patient) {
+    public Patient create(@Valid @RequestBody com.example.demo.dto.PatientDTO dto) {
+        Patient patient = new Patient();
+        patient.setName(dto.getName());
+        patient.setEgn(dto.getEgn());
+        patient.setInsured(dto.isInsured());
+        if (dto.getGeneralPractitioner() != null && dto.getGeneralPractitioner().getId() != null) {
+            com.example.demo.model.Doctor gp = new com.example.demo.model.Doctor();
+            gp.setId(dto.getGeneralPractitioner().getId());
+            patient.setGeneralPractitioner(gp);
+        }
         return patientRepository.save(patient);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public Patient update(@PathVariable Long id, @Valid @RequestBody Patient patientDetails) {
+    public Patient update(@PathVariable Long id, @Valid @RequestBody com.example.demo.dto.PatientDTO dto) {
         Patient patient = patientRepository.findById(id).orElseThrow();
-        patient.setName(patientDetails.getName());
-        patient.setEgn(patientDetails.getEgn());
-        patient.setInsured(patientDetails.isInsured());
-        patient.setGeneralPractitioner(patientDetails.getGeneralPractitioner());
+        patient.setName(dto.getName());
+        patient.setEgn(dto.getEgn());
+        patient.setInsured(dto.isInsured());
+        if (dto.getGeneralPractitioner() != null && dto.getGeneralPractitioner().getId() != null) {
+            com.example.demo.model.Doctor gp = new com.example.demo.model.Doctor();
+            gp.setId(dto.getGeneralPractitioner().getId());
+            patient.setGeneralPractitioner(gp);
+        } else {
+            patient.setGeneralPractitioner(null);
+        }
         return patientRepository.save(patient);
     }
 

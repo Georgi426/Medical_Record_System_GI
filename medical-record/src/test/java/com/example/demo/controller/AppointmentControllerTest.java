@@ -82,11 +82,26 @@ class AppointmentControllerTest {
         appointment.setDiagnosis(diagnosis);
         appointment.setTreatment("Лечение");
         appointment.setPrice(new BigDecimal("50.00"));
+        appointment.setPaidByNzok(true);
+
+        com.example.demo.dto.AppointmentDTO dto = new com.example.demo.dto.AppointmentDTO();
+        dto.setDate(LocalDate.of(2026, 5, 1));
+        com.example.demo.dto.EntityReference docRef = new com.example.demo.dto.EntityReference();
+        docRef.setId(1L);
+        dto.setDoctor(docRef);
+        com.example.demo.dto.EntityReference patRef = new com.example.demo.dto.EntityReference();
+        patRef.setId(1L);
+        dto.setPatient(patRef);
+        com.example.demo.dto.EntityReference diagRef = new com.example.demo.dto.EntityReference();
+        diagRef.setId(1L);
+        dto.setDiagnosis(diagRef);
+        dto.setTreatment("Лечение");
+        dto.setPrice(new BigDecimal("50.00"));
 
         when(patientRepository.findById(1L)).thenReturn(Optional.of(patient));
         when(appointmentRepository.save(any(Appointment.class))).thenReturn(appointment);
 
-        Appointment result = appointmentController.create(appointment, adminAuth);
+        Appointment result = appointmentController.create(dto, adminAuth);
         assertNotNull(result);
         assertTrue(result.isPaidByNzok());
         assertEquals("Лечение", result.getTreatment());
@@ -110,6 +125,20 @@ class AppointmentControllerTest {
         existing.setPatient(patient);
         existing.setDate(LocalDate.of(2026, 1, 1));
 
+        com.example.demo.dto.AppointmentDTO dto = new com.example.demo.dto.AppointmentDTO();
+        dto.setDate(LocalDate.of(2026, 6, 1));
+        com.example.demo.dto.EntityReference docRef = new com.example.demo.dto.EntityReference();
+        docRef.setId(1L);
+        dto.setDoctor(docRef);
+        com.example.demo.dto.EntityReference patRef = new com.example.demo.dto.EntityReference();
+        patRef.setId(1L);
+        dto.setPatient(patRef);
+        com.example.demo.dto.EntityReference diagRef = new com.example.demo.dto.EntityReference();
+        diagRef.setId(1L);
+        dto.setDiagnosis(diagRef);
+        dto.setTreatment("Ново лечение");
+        dto.setPrice(new BigDecimal("100.00"));
+
         Appointment updated = new Appointment();
         updated.setDate(LocalDate.of(2026, 6, 1));
         updated.setDoctor(doctor);
@@ -120,9 +149,9 @@ class AppointmentControllerTest {
 
         when(appointmentRepository.findById(1L)).thenReturn(Optional.of(existing));
         when(patientRepository.findById(1L)).thenReturn(Optional.of(patient));
-        when(appointmentRepository.save(any(Appointment.class))).thenReturn(existing);
+        when(appointmentRepository.save(any(Appointment.class))).thenReturn(updated);
 
-        Appointment result = appointmentController.update(1L, updated, adminAuth);
+        Appointment result = appointmentController.update(1L, dto, adminAuth);
         assertEquals(LocalDate.of(2026, 6, 1), result.getDate());
         assertEquals("Ново лечение", result.getTreatment());
     }

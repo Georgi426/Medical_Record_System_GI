@@ -274,7 +274,10 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch(e) {}
             throw new Error(errorMsg);
         }
-        if (method !== 'DELETE') return res.json();
+        if (method !== 'DELETE') {
+            const text = await res.text();
+            return text ? JSON.parse(text) : null;
+        }
     }
 
     const colLabels = {'name':'Име','uin':'УИН','specialty':'Специалност','generalPractitioner':'Личен лекар','egn':'ЕГН','insured':'Осигурен','description':'Описание','date':'Дата','treatment':'Лечение','price':'Цена','paidByNzok':'НЗОК','startDate':'Начало','durationDays':'Дни','patient.name':'Пациент','doctor.name':'Лекар','diagnosis.name':'Диагноза'};

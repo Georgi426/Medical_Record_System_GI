@@ -78,9 +78,19 @@ class SickLeaveControllerTest {
         sl.setDurationDays(5);
         sl.setDoctor(doctor);
 
+        com.example.demo.dto.SickLeaveDTO dto = new com.example.demo.dto.SickLeaveDTO();
+        dto.setStartDate(LocalDate.of(2026, 4, 1));
+        dto.setDurationDays(5);
+        com.example.demo.dto.EntityReference doctorRef = new com.example.demo.dto.EntityReference();
+        doctorRef.setId(1L);
+        dto.setDoctor(doctorRef);
+        com.example.demo.dto.EntityReference patientRef = new com.example.demo.dto.EntityReference();
+        patientRef.setId(1L);
+        dto.setPatient(patientRef);
+
         when(sickLeaveRepository.save(any(SickLeave.class))).thenReturn(sl);
 
-        SickLeave result = sickLeaveController.create(sl, adminAuth);
+        SickLeave result = sickLeaveController.create(dto, adminAuth);
         assertNotNull(result);
         assertEquals(5, result.getDurationDays());
     }
@@ -99,10 +109,20 @@ class SickLeaveControllerTest {
         sl.setDurationDays(10);
         sl.setDoctor(doctor);
 
+        com.example.demo.dto.SickLeaveDTO dto = new com.example.demo.dto.SickLeaveDTO();
+        dto.setStartDate(LocalDate.of(2026, 4, 1));
+        dto.setDurationDays(10);
+        com.example.demo.dto.EntityReference doctorRef = new com.example.demo.dto.EntityReference();
+        doctorRef.setId(1L);
+        dto.setDoctor(doctorRef);
+        com.example.demo.dto.EntityReference patientRef = new com.example.demo.dto.EntityReference();
+        patientRef.setId(1L);
+        dto.setPatient(patientRef);
+
         when(doctorRepository.findById(1L)).thenReturn(Optional.of(doctor));
         when(sickLeaveRepository.save(any(SickLeave.class))).thenReturn(sl);
 
-        SickLeave result = sickLeaveController.create(sl, doctorAuth);
+        SickLeave result = sickLeaveController.create(dto, doctorAuth);
         assertNotNull(result);
         assertEquals(10, result.getDurationDays());
     }
@@ -116,12 +136,14 @@ class SickLeaveControllerTest {
         doctor.setId(2L);
         doctor.setUser(user);
 
-        SickLeave sl = new SickLeave();
-        sl.setDoctor(doctor);
+        com.example.demo.dto.SickLeaveDTO dto = new com.example.demo.dto.SickLeaveDTO();
+        com.example.demo.dto.EntityReference doctorRef = new com.example.demo.dto.EntityReference();
+        doctorRef.setId(2L);
+        dto.setDoctor(doctorRef);
 
         when(doctorRepository.findById(2L)).thenReturn(Optional.of(doctor));
 
-        assertThrows(AccessDeniedException.class, () -> sickLeaveController.create(sl, doctorAuth));
+        assertThrows(AccessDeniedException.class, () -> sickLeaveController.create(dto, doctorAuth));
     }
 
     @Test

@@ -42,21 +42,40 @@ public class SickLeaveController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
-    public SickLeave create(@Valid @RequestBody SickLeave sickLeave, Authentication authentication) {
-        enforceDoctorOwnership(sickLeave.getDoctor().getId(), authentication);
+    public SickLeave create(@Valid @RequestBody com.example.demo.dto.SickLeaveDTO dto, Authentication authentication) {
+        enforceDoctorOwnership(dto.getDoctor().getId(), authentication);
+        SickLeave sickLeave = new SickLeave();
+        sickLeave.setStartDate(dto.getStartDate());
+        sickLeave.setDurationDays(dto.getDurationDays());
+
+        com.example.demo.model.Patient patient = new com.example.demo.model.Patient();
+        patient.setId(dto.getPatient().getId());
+        sickLeave.setPatient(patient);
+
+        com.example.demo.model.Doctor doctor = new com.example.demo.model.Doctor();
+        doctor.setId(dto.getDoctor().getId());
+        sickLeave.setDoctor(doctor);
+
         return sickLeaveRepository.save(sickLeave);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
-    public SickLeave update(@PathVariable Long id, @Valid @RequestBody SickLeave sickLeaveDetails, Authentication authentication) {
+    public SickLeave update(@PathVariable Long id, @Valid @RequestBody com.example.demo.dto.SickLeaveDTO dto, Authentication authentication) {
         SickLeave sickLeave = sickLeaveRepository.findById(id).orElseThrow();
-        enforceDoctorOwnership(sickLeave.getDoctor().getId(), authentication);
+        enforceDoctorOwnership(dto.getDoctor().getId(), authentication);
 
-        sickLeave.setStartDate(sickLeaveDetails.getStartDate());
-        sickLeave.setDurationDays(sickLeaveDetails.getDurationDays());
-        sickLeave.setPatient(sickLeaveDetails.getPatient());
-        sickLeave.setDoctor(sickLeaveDetails.getDoctor());
+        sickLeave.setStartDate(dto.getStartDate());
+        sickLeave.setDurationDays(dto.getDurationDays());
+
+        com.example.demo.model.Patient patient = new com.example.demo.model.Patient();
+        patient.setId(dto.getPatient().getId());
+        sickLeave.setPatient(patient);
+
+        com.example.demo.model.Doctor doctor = new com.example.demo.model.Doctor();
+        doctor.setId(dto.getDoctor().getId());
+        sickLeave.setDoctor(doctor);
+
         return sickLeaveRepository.save(sickLeave);
     }
 

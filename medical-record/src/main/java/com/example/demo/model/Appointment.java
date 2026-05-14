@@ -16,31 +16,24 @@ public class Appointment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull(message = "Датата е задължителна")
     @Column(nullable = false)
     private LocalDate date;
 
-    @NotNull(message = "Лекарят е задължителен")
     @ManyToOne(optional = false)
     @JoinColumn(name = "doctor_id", nullable = false)
     private Doctor doctor;
 
-    @NotNull(message = "Пациентът е задължителен")
     @ManyToOne(optional = false)
     @JoinColumn(name = "patient_id", nullable = false)
     private Patient patient;
 
-    @NotNull(message = "Диагнозата е задължителна")
     @ManyToOne(optional = false)
     @JoinColumn(name = "diagnosis_id", nullable = false)
     private Diagnosis diagnosis;
 
-    @Size(max = 2000, message = "Лечението не може да надвишава 2000 символа")
     @Column(columnDefinition = "TEXT")
     private String treatment;
 
-    @NotNull(message = "Цената е задължителна")
-    @DecimalMin(value = "0.00", message = "Цената не може да бъде отрицателна")
     @Column(nullable = false)
     private BigDecimal price;
 

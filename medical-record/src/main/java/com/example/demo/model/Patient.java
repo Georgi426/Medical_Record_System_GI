@@ -14,14 +14,9 @@ public class Patient {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Името е задължително")
-    @Size(min = 2, max = 100, message = "Името трябва да е между 2 и 100 символа")
     @Column(nullable = false)
     private String name;
 
-    @NotBlank(message = "ЕГН е задължително")
-    @Size(min = 10, max = 10, message = "ЕГН трябва да е точно 10 цифри")
-    @Pattern(regexp = "^\\d{10}$", message = "ЕГН трябва да съдържа само цифри")
     @Column(unique = true, nullable = false)
     private String egn;
 

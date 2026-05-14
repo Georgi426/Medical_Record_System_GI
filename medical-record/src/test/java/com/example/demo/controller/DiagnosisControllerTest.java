@@ -54,9 +54,13 @@ class DiagnosisControllerTest {
         diagnosis.setName("Бронхит");
         diagnosis.setDescription("Възпаление на бронхите");
 
+        com.example.demo.dto.DiagnosisDTO dto = new com.example.demo.dto.DiagnosisDTO();
+        dto.setName("Бронхит");
+        dto.setDescription("Възпаление на бронхите");
+
         when(diagnosisRepository.save(any(Diagnosis.class))).thenReturn(diagnosis);
 
-        Diagnosis result = diagnosisController.create(diagnosis);
+        Diagnosis result = diagnosisController.create(dto);
         assertNotNull(result);
         assertEquals("Бронхит", result.getName());
         assertEquals("Възпаление на бронхите", result.getDescription());
@@ -69,14 +73,14 @@ class DiagnosisControllerTest {
         existing.setName("Грип");
         existing.setDescription("Сезонен грип");
 
-        Diagnosis updated = new Diagnosis();
-        updated.setName("Грип A");
-        updated.setDescription("Грип тип A");
+        com.example.demo.dto.DiagnosisDTO updatedDto = new com.example.demo.dto.DiagnosisDTO();
+        updatedDto.setName("Грип A");
+        updatedDto.setDescription("Грип тип A");
 
         when(diagnosisRepository.findById(1L)).thenReturn(Optional.of(existing));
         when(diagnosisRepository.save(any(Diagnosis.class))).thenReturn(existing);
 
-        Diagnosis result = diagnosisController.update(1L, updated);
+        Diagnosis result = diagnosisController.update(1L, updatedDto);
         assertEquals("Грип A", result.getName());
         assertEquals("Грип тип A", result.getDescription());
     }
