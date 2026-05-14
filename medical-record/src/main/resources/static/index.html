@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Медицинско Досие</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+    <div class="login-container" id="loginView">
+        <div class="glass-card">
+            <div class="logo-container">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="35" y="10" width="30" height="80" rx="4" fill="#dc2626"/>
+                    <rect x="10" y="35" width="80" height="30" rx="4" fill="#dc2626"/>
+                    <line x1="50" y1="22" x2="50" y2="78" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                    <circle cx="50" cy="24" r="4" fill="white"/>
+                    <path d="M50 30 C42 36, 56 44, 44 50 C56 56, 42 64, 50 70" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <h2 id="formTitle">Медицинско Досие</h2>
+            <p class="subtitle">Влезте в профила си или се регистрирайте</p>
+            
+            <div class="auth-tabs">
+                <button id="tabLogin" class="tab-btn active">Вход</button>
+                <button id="tabRegister" class="tab-btn">Регистрация</button>
+            </div>
+
+            <form id="authForm">
+                <div class="input-group">
+                    <label>Потребителско име</label>
+                    <input type="text" id="username" placeholder="Въведете потребителско име" required>
+                </div>
+                <div class="input-group">
+                    <label>Парола</label>
+                    <input type="password" id="password" placeholder="Въведете парола" required>
+                </div>
+
+                <div id="registerFields" class="hidden">
+                    <div class="input-group">
+                        <label>Роля</label>
+                        <select id="roleSelect" class="styled-select">
+                            <option value="ROLE_PATIENT">Пациент</option>
+                            <option value="ROLE_DOCTOR">Лекар</option>
+                        </select>
+                    </div>
+
+                    <div id="patientFields">
+                        <div class="input-group">
+                            <label>Име</label>
+                            <input type="text" id="patientName" placeholder="Пълно име">
+                        </div>
+                        <div class="input-group">
+                            <label>ЕГН</label>
+                            <input type="text" id="patientEgn" maxlength="10" placeholder="10 цифри">
+                        </div>
+                        <div class="input-group checkbox-group">
+                            <input type="checkbox" id="patientInsured">
+                            <label for="patientInsured">Здравно осигурен</label>
+                        </div>
+                    </div>
+
+                    <div id="doctorFields" class="hidden">
+                        <div class="input-group">
+                            <label>Име на лекар</label>
+                            <input type="text" id="doctorName" placeholder="Д-р ...">
+                        </div>
+                        <div class="input-group">
+                            <label>УИН</label>
+                            <input type="text" id="doctorUin" placeholder="10 цифри">
+                        </div>
+                        <div class="input-group">
+                            <label>Специалност</label>
+                            <input type="text" id="doctorSpecialty" placeholder="Кардиология, Хирургия...">
+                        </div>
+                        <div class="input-group checkbox-group">
+                            <input type="checkbox" id="doctorGp">
+                            <label for="doctorGp">Личен лекар</label>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" id="authSubmitBtn" class="btn-primary">Вход</button>
+                <div id="loginError" class="error-msg"></div>
+                <div id="loginSuccess" class="success-msg"></div>
+            </form>
+        </div>
+    </div>
+
+    <div class="dashboard-container hidden" id="dashboardView">
+        <nav class="sidebar">
+            <h2 class="brand">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="35" y="10" width="30" height="80" rx="4" fill="#dc2626"/>
+                    <rect x="10" y="35" width="80" height="30" rx="4" fill="#dc2626"/>
+                    <line x1="50" y1="22" x2="50" y2="78" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                    <circle cx="50" cy="24" r="4" fill="white"/>
+                    <path d="M50 30 C42 36, 56 44, 44 50 C56 56, 42 64, 50 70" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                </svg>
+                Медицинско Досие
+            </h2>
+            <ul id="navMenu"></ul>
+            <button id="logoutBtn" class="btn-secondary">Изход</button>
+        </nav>
+        
+        <main class="content">
+            <header>
+                <h1 id="pageTitle">Начало</h1>
+                <div class="user-info">
+                    <span id="currentUser"></span> · <span id="currentRole"></span>
+                </div>
+            </header>
+            
+            <section id="mainContent" class="glass-panel">
+            </section>
+        </main>
+    </div>
+
+    <div id="formModal" class="modal hidden">
+        <div class="modal-content glass-card">
+            <h2 id="modalTitle">Добавяне</h2>
+            <form id="genericForm">
+                <div id="modalFormFields"></div>
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="submit" class="btn-primary">Запази</button>
+                    <button type="button" class="btn-secondary" id="closeModalBtn" style="margin-top:0">Отказ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>
