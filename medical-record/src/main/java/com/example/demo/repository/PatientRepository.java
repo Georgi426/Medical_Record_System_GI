@@ -6,6 +6,7 @@ import java.util.Optional;
 
 public interface PatientRepository extends JpaRepository<Patient, Long> {
     Optional<Patient> findByUserId(Long userId);
+    boolean existsByEgn(String egn);
 
     java.util.List<Patient> findByGeneralPractitionerId(Long gpId);
 

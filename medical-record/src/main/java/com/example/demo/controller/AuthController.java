@@ -97,6 +97,9 @@ public class AuthController {
             if (request.getUin() == null || !request.getUin().matches("^\\d{10}$")) {
                 return ResponseEntity.badRequest().body(new AuthResponse("error", null, "УИН трябва да съдържа точно 10 цифри"));
             }
+            if (doctorRepository.existsByUin(request.getUin())) {
+                return ResponseEntity.badRequest().body(new AuthResponse("error", null, "Този УИН вече е регистриран"));
+            }
             if (request.getSpecialty() == null || request.getSpecialty().isBlank()) {
                 return ResponseEntity.badRequest().body(new AuthResponse("error", null, "Специалността е задължителна"));
             }
@@ -106,6 +109,9 @@ public class AuthController {
             }
             if (request.getEgn() == null || !request.getEgn().matches("^\\d{10}$")) {
                 return ResponseEntity.badRequest().body(new AuthResponse("error", null, "ЕГН трябва да съдържа точно 10 цифри"));
+            }
+            if (patientRepository.existsByEgn(request.getEgn())) {
+                return ResponseEntity.badRequest().body(new AuthResponse("error", null, "Това ЕГН вече е регистрирано"));
             }
         }
 
