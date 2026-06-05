@@ -136,8 +136,8 @@ public class AuthController {
             patient.setInsured(request.isInsured());
             patient.setUser(user);
             
-            if (request.getGeneralPractitionerId() != null) {
-                doctorRepository.findById(request.getGeneralPractitionerId())
+            if (request.getGeneralPractitioner() != null && request.getGeneralPractitioner().getId() != null) {
+                doctorRepository.findById(request.getGeneralPractitioner().getId())
                         .ifPresent(patient::setGeneralPractitioner);
             }
             

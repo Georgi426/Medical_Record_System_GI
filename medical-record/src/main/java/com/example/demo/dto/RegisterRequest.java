@@ -1,6 +1,7 @@
 package com.example.demo.dto;
 
 import com.example.demo.model.User.Role;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -26,7 +27,8 @@ public class RegisterRequest {
 
     private String egn;
     private boolean isInsured;
-    private Long generalPractitionerId;
+    @Valid
+    private EntityReference generalPractitioner;
 
 
     public String getUsername() { return username; }
@@ -56,6 +58,6 @@ public class RegisterRequest {
     public boolean isInsured() { return isInsured; }
     public void setInsured(boolean insured) { this.isInsured = insured; }
 
-    public Long getGeneralPractitionerId() { return generalPractitionerId; }
-    public void setGeneralPractitionerId(Long generalPractitionerId) { this.generalPractitionerId = generalPractitionerId; }
+    public EntityReference getGeneralPractitioner() { return generalPractitioner; }
+    public void setGeneralPractitioner(EntityReference generalPractitioner) { this.generalPractitioner = generalPractitioner; }
 }

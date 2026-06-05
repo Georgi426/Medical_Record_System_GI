@@ -27,8 +27,14 @@ public class SickLeaveController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
-    public List<SickLeave> getAll() {
-        return sickLeaveRepository.findAll();
+    public List<SickLeave> getAll(Authentication authentication) {
+        if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            return sickLeaveRepository.findAll();
+        }
+        String username = authentication.getName();
+        return sickLeaveRepository.findAll().stream()
+                .filter(s -> s.getDoctor().getUser().getUsername().equals(username))
+                .toList();
     }
 
     @GetMapping("/me")

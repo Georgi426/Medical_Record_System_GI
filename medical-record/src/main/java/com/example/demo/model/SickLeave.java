@@ -29,6 +29,10 @@ public class SickLeave {
     @JoinColumn(name = "doctor_id", nullable = false)
     private Doctor doctor;
 
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "appointment_id", nullable = true)
+    private Appointment appointment;
+
 
 
     public Long getId() { return id; }
@@ -45,4 +49,7 @@ public class SickLeave {
 
     public Doctor getDoctor() { return doctor; }
     public void setDoctor(Doctor doctor) { this.doctor = doctor; }
+
+    public Appointment getAppointment() { return appointment; }
+    public void setAppointment(Appointment appointment) { this.appointment = appointment; }
 }

@@ -29,14 +29,13 @@ public class DataInitializer implements CommandLineRunner {
     @Transactional
     public void run(String... args) throws Exception {
         if (userRepository.count() == 0) {
-            // Create Admin
+
             User admin = new User();
             admin.setUsername("admin");
             admin.setPassword(passwordEncoder.encode("admin123"));
             admin.setRole(User.Role.ROLE_ADMIN);
             userRepository.save(admin);
 
-            // Create Doctor
             User docUser = new User();
             docUser.setUsername("doctor");
             docUser.setPassword(passwordEncoder.encode("doctor123"));

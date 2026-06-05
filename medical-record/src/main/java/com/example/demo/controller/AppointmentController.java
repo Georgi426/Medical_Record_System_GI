@@ -27,8 +27,14 @@ public class AppointmentController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
-    public List<Appointment> getAll() {
-        return appointmentRepository.findAll();
+    public List<Appointment> getAll(org.springframework.security.core.Authentication authentication) {
+        if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            return appointmentRepository.findAll();
+        }
+        String username = authentication.getName();
+        return appointmentRepository.findAll().stream()
+                .filter(a -> a.getDoctor().getUser().getUsername().equals(username))
+                .toList();
     }
 
     @GetMapping("/me")
@@ -49,8 +55,11 @@ public class AppointmentController {
         
         Appointment appointment = new Appointment();
         appointment.setDate(dto.getDate());
-        appointment.setTreatment(dto.getTreatment());
-        appointment.setPrice(dto.getPrice());
+        if (patient.isInsured()) {
+            appointment.setPrice(java.math.BigDecimal.ZERO);
+        } else {
+            appointment.setPrice(dto.getPrice());
+        }
         
         com.example.demo.model.Doctor doctor = new com.example.demo.model.Doctor();
         doctor.setId(dto.getDoctor().getId());
@@ -87,7 +96,11 @@ public class AppointmentController {
         appointment.setDiagnosis(diagnosis);
         
         appointment.setTreatment(dto.getTreatment());
-        appointment.setPrice(dto.getPrice());
+        if (patient.isInsured()) {
+            appointment.setPrice(java.math.BigDecimal.ZERO);
+        } else {
+            appointment.setPrice(dto.getPrice());
+        }
         appointment.setPaidByNzok(patient.isInsured());
         
         return appointmentRepository.save(appointment);

@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import java.util.Set;
+import java.util.HashSet;
 
 @Entity
 @Table(name = "patients")
@@ -50,4 +52,15 @@ public class Patient {
 
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
+
+    @ManyToMany
+    @JoinTable(
+        name = "patient_allergies",
+        joinColumns = @JoinColumn(name = "patient_id"),
+        inverseJoinColumns = @JoinColumn(name = "allergy_id")
+    )
+    private Set<Allergy> allergies = new HashSet<>();
+
+    public Set<Allergy> getAllergies() { return allergies; }
+    public void setAllergies(Set<Allergy> allergies) { this.allergies = allergies; }
 }
