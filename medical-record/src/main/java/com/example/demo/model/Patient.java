@@ -52,15 +52,4 @@ public class Patient {
 
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
-
-    @ManyToMany
-    @JoinTable(
-        name = "patient_allergies",
-        joinColumns = @JoinColumn(name = "patient_id"),
-        inverseJoinColumns = @JoinColumn(name = "allergy_id")
-    )
-    private Set<Allergy> allergies = new HashSet<>();
-
-    public Set<Allergy> getAllergies() { return allergies; }
-    public void setAllergies(Set<Allergy> allergies) { this.allergies = allergies; }
 }

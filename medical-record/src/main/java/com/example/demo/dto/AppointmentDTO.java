@@ -14,6 +14,8 @@ public class AppointmentDTO {
     @Size(max = 255, message = "Лечението не може да надвишава 255 символа")
     private String treatment;
 
+    private String additionalInfo;
+
     @Min(value = 0, message = "Цената не може да бъде отрицателна")
     private java.math.BigDecimal price;
 
@@ -34,6 +36,9 @@ public class AppointmentDTO {
 
     public String getTreatment() { return treatment; }
     public void setTreatment(String treatment) { this.treatment = treatment; }
+
+    public String getAdditionalInfo() { return additionalInfo; }
+    public void setAdditionalInfo(String additionalInfo) { this.additionalInfo = additionalInfo; }
 
     public java.math.BigDecimal getPrice() { return price; }
     public void setPrice(java.math.BigDecimal price) { this.price = price; }

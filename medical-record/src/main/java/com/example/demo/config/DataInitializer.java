@@ -3,6 +3,7 @@ package com.example.demo.config;
 import com.example.demo.model.*;
 import com.example.demo.repository.*;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 
 @Component
+@Profile("!test")
 public class DataInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;

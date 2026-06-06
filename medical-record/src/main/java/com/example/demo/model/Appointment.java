@@ -27,12 +27,15 @@ public class Appointment {
     @JoinColumn(name = "patient_id", nullable = false)
     private Patient patient;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "diagnosis_id", nullable = false)
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "diagnosis_id", nullable = true)
     private Diagnosis diagnosis;
 
     @Column(columnDefinition = "TEXT")
     private String treatment;
+
+    @Column(columnDefinition = "TEXT")
+    private String additionalInfo;
 
     @Column(nullable = false)
     private BigDecimal price;
@@ -40,7 +43,8 @@ public class Appointment {
     @Column(nullable = false)
     private boolean paidByNzok;
 
-
+    @Column(nullable = false)
+    private boolean isPaid;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -60,9 +64,15 @@ public class Appointment {
     public String getTreatment() { return treatment; }
     public void setTreatment(String treatment) { this.treatment = treatment; }
 
+    public String getAdditionalInfo() { return additionalInfo; }
+    public void setAdditionalInfo(String additionalInfo) { this.additionalInfo = additionalInfo; }
+
     public BigDecimal getPrice() { return price; }
     public void setPrice(BigDecimal price) { this.price = price; }
 
     public boolean isPaidByNzok() { return paidByNzok; }
     public void setPaidByNzok(boolean paidByNzok) { this.paidByNzok = paidByNzok; }
+
+    public boolean isPaid() { return isPaid; }
+    public void setPaid(boolean paid) { isPaid = paid; }
 }

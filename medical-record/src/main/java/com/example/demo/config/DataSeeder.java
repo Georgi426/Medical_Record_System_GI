@@ -3,6 +3,7 @@ package com.example.demo.config;
 import com.example.demo.model.*;
 import com.example.demo.repository.*;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -10,6 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Component
+@Profile("!test")
 public class DataSeeder implements CommandLineRunner {
 
     private final UserRepository userRepository;
@@ -20,22 +22,10 @@ public class DataSeeder implements CommandLineRunner {
     private final SickLeaveRepository sickLeaveRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // New Repositories
-    private final MedicalRecordRepository medicalRecordRepository;
-    private final DepartmentRepository departmentRepository;
-    private final TreatmentRepository treatmentRepository;
-    private final HealthInsuranceRepository healthInsuranceRepository;
-    private final InvoiceRepository invoiceRepository;
-
     public DataSeeder(UserRepository userRepository, DoctorRepository doctorRepository, 
                       PatientRepository patientRepository, DiagnosisRepository diagnosisRepository, 
                       AppointmentRepository appointmentRepository, SickLeaveRepository sickLeaveRepository, 
-                      PasswordEncoder passwordEncoder,
-                      MedicalRecordRepository medicalRecordRepository,
-                      DepartmentRepository departmentRepository,
-                      TreatmentRepository treatmentRepository,
-                      HealthInsuranceRepository healthInsuranceRepository,
-                      InvoiceRepository invoiceRepository) {
+                      PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.doctorRepository = doctorRepository;
         this.patientRepository = patientRepository;
@@ -43,119 +33,190 @@ public class DataSeeder implements CommandLineRunner {
         this.appointmentRepository = appointmentRepository;
         this.sickLeaveRepository = sickLeaveRepository;
         this.passwordEncoder = passwordEncoder;
-        this.medicalRecordRepository = medicalRecordRepository;
-        this.departmentRepository = departmentRepository;
-        this.treatmentRepository = treatmentRepository;
-        this.healthInsuranceRepository = healthInsuranceRepository;
-        this.invoiceRepository = invoiceRepository;
     }
 
     @Override
     public void run(String... args) {
-        if (userRepository.count() == 0) {
-            // Създаване на Администратор
-            User admin = new User();
-            admin.setUsername("admin");
-            admin.setPassword(passwordEncoder.encode("admin"));
-            admin.setRole(User.Role.ROLE_ADMIN);
-            userRepository.save(admin);
+        // ALWAYS clear database first to ensure fresh data
+        sickLeaveRepository.deleteAll();
+        appointmentRepository.deleteAll();
+        patientRepository.deleteAll();
+        doctorRepository.deleteAll();
+        diagnosisRepository.deleteAll();
+        userRepository.deleteAll();
 
-            // Създаване на Лекар
-            User docUser = new User();
-            docUser.setUsername("doctor");
-            docUser.setPassword(passwordEncoder.encode("doctor"));
-            docUser.setRole(User.Role.ROLE_DOCTOR);
-            userRepository.save(docUser);
+        System.out.println("===> СТАРИТЕ ДАННИ БЯХА ИЗТРИТИ, ЗАПОЧВА ЗАРЕЖДАНЕ НА НОВИТЕ <===");
 
-            Doctor doctor = new Doctor();
-            doctor.setName("Д-р Петров");
-            doctor.setSpecialty("Кардиолог");
-            doctor.setUin("1234567890");
-            doctor.setGeneralPractitioner(true);
-            doctor.setUser(docUser);
-            doctorRepository.save(doctor);
+        // =========================
+        // 1. СЪЗДАВАНЕ НА АДМИН
+        // =========================
+        User admin = new User();
+        admin.setUsername("admin");
+        admin.setPassword(passwordEncoder.encode("admin"));
+        admin.setRole(User.Role.ROLE_ADMIN);
+        userRepository.save(admin);
 
-            // Създаване на Пациент
-            User patUser = new User();
-            patUser.setUsername("patient");
-            patUser.setPassword(passwordEncoder.encode("patient"));
-            patUser.setRole(User.Role.ROLE_PATIENT);
-            userRepository.save(patUser);
+        // =========================
+        // 2. СЪЗДАВАНЕ НА ЛЕКАРИ
+        // =========================
+        // Лекар 1 (Кардиолог)
+        User docUser1 = new User();
+        docUser1.setUsername("doctor");
+        docUser1.setPassword(passwordEncoder.encode("doctor"));
+        docUser1.setRole(User.Role.ROLE_DOCTOR);
+        Doctor doctor1 = new Doctor();
+        doctor1.setName("Д-р Петров");
+        doctor1.setSpecialty("Кардиолог");
+        doctor1.setUin("1234567890");
+        doctor1.setGeneralPractitioner(true);
+        doctor1.setUser(docUser1);
+        doctorRepository.save(doctor1);
 
-            Patient patient = new Patient();
-            patient.setName("Иван Иванов");
-            patient.setEgn("9001011234");
-            patient.setInsured(true);
-            patient.setGeneralPractitioner(doctor);
-            patient.setUser(patUser);
-            patientRepository.save(patient);
+        // Лекар 2 (Невролог)
+        User docUser2 = new User();
+        docUser2.setUsername("doctor2");
+        docUser2.setPassword(passwordEncoder.encode("doctor2"));
+        docUser2.setRole(User.Role.ROLE_DOCTOR);
+        Doctor doctor2 = new Doctor();
+        doctor2.setName("Д-р Георгиев");
+        doctor2.setSpecialty("Невролог");
+        doctor2.setUin("0987654321");
+        doctor2.setGeneralPractitioner(true);
+        doctor2.setUser(docUser2);
+        doctorRepository.save(doctor2);
 
-            // Създаване на Диагноза
-            Diagnosis diagnosis = new Diagnosis();
-            diagnosis.setName("Грип");
-            diagnosis.setDescription("Вирусна инфекция с висока температура");
-            diagnosisRepository.save(diagnosis);
+        // Лекар 3 (Ортопед)
+        User docUser3 = new User();
+        docUser3.setUsername("doctor3");
+        docUser3.setPassword(passwordEncoder.encode("doctor3"));
+        docUser3.setRole(User.Role.ROLE_DOCTOR);
+        Doctor doctor3 = new Doctor();
+        doctor3.setName("Д-р Маринова");
+        doctor3.setSpecialty("Ортопед");
+        doctor3.setUin("5647382910");
+        doctor3.setGeneralPractitioner(false); // Този е само специалист
+        doctor3.setUser(docUser3);
+        doctorRepository.save(doctor3);
 
-            // Създаване на Преглед
-            Appointment appointment = new Appointment();
-            appointment.setDate(LocalDate.now());
-            appointment.setDoctor(doctor);
-            appointment.setPatient(patient);
-            appointment.setDiagnosis(diagnosis);
-            appointment.setTreatment("Почивка, чай и витамини");
-            appointment.setPrice(BigDecimal.ZERO);
-            appointment.setPaidByNzok(true);
-            appointmentRepository.save(appointment);
+        // =========================
+        // 3. СЪЗДАВАНЕ НА ПАЦИЕНТИ
+        // =========================
+        // Пациент 1
+        User patUser1 = new User();
+        patUser1.setUsername("patient");
+        patUser1.setPassword(passwordEncoder.encode("patient"));
+        patUser1.setRole(User.Role.ROLE_PATIENT);
+        Patient patient1 = new Patient();
+        patient1.setName("Иван Иванов");
+        patient1.setEgn("9001011234");
+        patient1.setInsured(true);
+        patient1.setGeneralPractitioner(doctor1);
+        patient1.setUser(patUser1);
+        patientRepository.save(patient1);
 
-            // Създаване на Болничен
-            SickLeave sickLeave = new SickLeave();
-            sickLeave.setDoctor(doctor);
-            sickLeave.setPatient(patient);
-            sickLeave.setStartDate(LocalDate.now());
-            sickLeave.setDurationDays(5);
-            sickLeaveRepository.save(sickLeave);
-            
-            // --- НОВИ ДАННИ ЗА НОВИТЕ МОДЕЛИ --- //
+        // Пациент 2
+        User patUser2 = new User();
+        patUser2.setUsername("patient2");
+        patUser2.setPassword(passwordEncoder.encode("patient2"));
+        patUser2.setRole(User.Role.ROLE_PATIENT);
+        Patient patient2 = new Patient();
+        patient2.setName("Мария Димитрова");
+        patient2.setEgn("8505054321");
+        patient2.setInsured(false); // Този пациент няма осигуровки
+        patient2.setGeneralPractitioner(doctor2);
+        patient2.setUser(patUser2);
+        patientRepository.save(patient2);
 
-            // 1. Department (Отделение)
-            Department department = new Department();
-            department.setName("Кардиология");
-            department.setHeadDoctor(doctor);
-            departmentRepository.save(department);
+        // Пациент 3
+        User patUser3 = new User();
+        patUser3.setUsername("patient3");
+        patUser3.setPassword(passwordEncoder.encode("patient3"));
+        patUser3.setRole(User.Role.ROLE_PATIENT);
+        Patient patient3 = new Patient();
+        patient3.setName("Георги Стоянов");
+        patient3.setEgn("7808089988");
+        patient3.setInsured(true);
+        patient3.setGeneralPractitioner(doctor1); // Същият личен лекар като на пациент 1
+        patient3.setUser(patUser3);
+        patientRepository.save(patient3);
 
-            // 2. MedicalRecord (Медицинско досие / Посещение)
-            MedicalRecord medicalRecord = new MedicalRecord();
-            medicalRecord.setPatient(patient);
-            medicalRecord.setDoctor(doctor);
-            medicalRecord.setVisitDate(LocalDate.now());
-            medicalRecord.setComplaints("Сърцебиене и лека болка в гърдите");
-            medicalRecordRepository.save(medicalRecord);
 
-            // 3. Treatment (Лечение)
-            Treatment treatment = new Treatment();
-            treatment.setMedicalRecord(medicalRecord);
-            treatment.setDescription("Наблюдение и контрол на кръвното налягане");
-            treatment.setMedication("Карведилол");
-            treatment.setDosage("1/2 таблетка дневно");
-            treatmentRepository.save(treatment);
+        // =========================
+        // 4. СЪЗДАВАНЕ НА ДИАГНОЗИ
+        // =========================
+        Diagnosis diagnosis1 = new Diagnosis();
+        diagnosis1.setName("Грип");
+        diagnosis1.setDescription("Вирусна инфекция с висока температура");
+        diagnosisRepository.save(diagnosis1);
 
-            // 4. HealthInsurance (Здравна осигуровка)
-            HealthInsurance healthInsurance = new HealthInsurance();
-            healthInsurance.setPatient(patient);
-            healthInsurance.setProvider("НЗОК");
-            healthInsurance.setPolicyNumber("POL-123456789");
-            healthInsurance.setValidUntil(LocalDate.now().plusYears(1));
-            healthInsuranceRepository.save(healthInsurance);
+        Diagnosis diagnosis2 = new Diagnosis();
+        diagnosis2.setName("Хипертония");
+        diagnosis2.setDescription("Високо кръвно налягане");
+        diagnosisRepository.save(diagnosis2);
 
-            // 5. Invoice (Фактура)
-            Invoice invoice = new Invoice();
-            invoice.setPatient(patient);
-            invoice.setAmount(new BigDecimal("45.50"));
-            invoice.setIssueDate(LocalDate.now());
-            invoice.setPaid(false);
-            invoiceRepository.save(invoice);
+        Diagnosis diagnosis3 = new Diagnosis();
+        diagnosis3.setName("Фрактура");
+        diagnosis3.setDescription("Счупване на кост");
+        diagnosisRepository.save(diagnosis3);
 
-            System.out.println("===> БАЗАТА ДАННИ БЕШЕ УСПЕШНО ЗАРЕДЕНА С НАЧАЛНИ ДАННИ (SEEDER) <===");
-        }
+
+        // =========================
+        // 5. ПРЕГЛЕДИ
+        // =========================
+        // Преглед 1
+        Appointment app1 = new Appointment();
+        app1.setDate(LocalDate.now().minusDays(2));
+        app1.setDoctor(doctor1);
+        app1.setPatient(patient1);
+        app1.setDiagnosis(diagnosis1);
+        app1.setTreatment("Почивка, чай и витамини");
+        app1.setPrice(BigDecimal.ZERO); // Има осигуровки
+        app1.setPaidByNzok(true);
+        app1.setPaid(true);
+        appointmentRepository.save(app1);
+
+        // Преглед 2
+        Appointment app2 = new Appointment();
+        app2.setDate(LocalDate.now().minusDays(1));
+        app2.setDoctor(doctor2);
+        app2.setPatient(patient2);
+        app2.setDiagnosis(diagnosis2);
+        app2.setTreatment("Следене на кръвно налягане");
+        app2.setPrice(new BigDecimal("50.00")); // Няма осигуровки, плаща сам
+        app2.setPaidByNzok(false);
+        app2.setPaid(false);
+        appointmentRepository.save(app2);
+
+        // Преглед 3
+        Appointment app3 = new Appointment();
+        app3.setDate(LocalDate.now());
+        app3.setDoctor(doctor3);
+        app3.setPatient(patient3);
+        app3.setDiagnosis(diagnosis3);
+        app3.setTreatment("Обездвижване и гипс");
+        app3.setPrice(BigDecimal.ZERO); 
+        app3.setPaidByNzok(true);
+        app3.setPaid(true);
+        appointmentRepository.save(app3);
+
+
+        // =========================
+        // 6. БОЛНИЧНИ ЛИСТОВЕ
+        // =========================
+        SickLeave sickLeave1 = new SickLeave();
+        sickLeave1.setDoctor(doctor1);
+        sickLeave1.setPatient(patient1);
+        sickLeave1.setStartDate(LocalDate.now().minusDays(2));
+        sickLeave1.setDurationDays(5);
+        sickLeaveRepository.save(sickLeave1);
+
+        SickLeave sickLeave2 = new SickLeave();
+        sickLeave2.setDoctor(doctor3);
+        sickLeave2.setPatient(patient3);
+        sickLeave2.setStartDate(LocalDate.now());
+        sickLeave2.setDurationDays(30);
+        sickLeaveRepository.save(sickLeave2);
+
+        System.out.println("===> БАЗАТА ДАННИ БЕШЕ УСПЕШНО ЗАРЕДЕНА С 3-МА ДОКТОРИ И 3-МА ПАЦИЕНТИ (SEEDER) <===");
     }
 }

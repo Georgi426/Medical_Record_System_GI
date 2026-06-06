@@ -84,6 +84,15 @@
                 <button type="submit" id="authSubmitBtn" class="btn-primary">Вход</button>
                 <div id="loginError" class="error-msg"></div>
                 <div id="loginSuccess" class="success-msg"></div>
+
+                <div id="quickLoginSection" style="margin-top: 1.5rem; text-align: center; border-top: 1px solid #e5e7eb; padding-top: 1rem;">
+                    <p style="font-size: 0.85rem; color: #6b7280; margin-bottom: 0.75rem;">Бърз вход с тестови данни:</p>
+                    <div style="display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap;">
+                        <button type="button" class="btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; margin:0;" onclick="document.getElementById('username').value='admin'; document.getElementById('password').value='admin';">Админ</button>
+                        <button type="button" class="btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; margin:0;" onclick="document.getElementById('username').value='doctor'; document.getElementById('password').value='doctor';">Лекар</button>
+                        <button type="button" class="btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; margin:0;" onclick="document.getElementById('username').value='patient'; document.getElementById('password').value='patient';">Пациент</button>
+                    </div>
+                </div>
             </form>
         </div>
     </div>

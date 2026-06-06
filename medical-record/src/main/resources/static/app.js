@@ -193,15 +193,15 @@ document.addEventListener('DOMContentLoaded', () => {
             items.push({ id: 'doctors', label: 'Лекари', fn: () => renderTable('doctors', '/api/doctors', ['name', 'uin', 'specialty', 'generalPractitioner']) });
             items.push({ id: 'patients', label: 'Пациенти', fn: () => renderTable('patients', '/api/patients', ['name', 'egn', 'insured']) });
             items.push({ id: 'diagnoses', label: 'Диагнози', fn: () => renderTable('diagnoses', '/api/diagnoses', ['name', 'description']) });
-            items.push({ id: 'appointments', label: 'Прегледи', fn: () => renderTable('appointments', '/api/appointments', ['date', 'treatment', 'price', 'paidByNzok', 'patient.name', 'doctor.name', 'diagnosis.name']) });
+            items.push({ id: 'appointments', label: 'Прегледи', fn: () => renderTable('appointments', '/api/appointments', ['date', 'treatment', 'additionalInfo', 'price', 'paidByNzok', 'patient.name', 'doctor.name', 'diagnosis.name']) });
             items.push({ id: 'sickLeaves', label: 'Болнични', fn: () => renderTable('sickLeaves', '/api/sick-leaves', ['startDate', 'durationDays', 'patient.name', 'doctor.name']) });
         } else if (currentRole === 'ROLE_DOCTOR') {
             items.push({ id: 'patients', label: 'Пациенти', fn: () => renderTable('patients', '/api/patients', ['name', 'egn', 'insured'], false) });
             items.push({ id: 'diagnoses', label: 'Диагнози', fn: () => renderTable('diagnoses', '/api/diagnoses', ['name', 'description'], false) });
-            items.push({ id: 'appointments', label: 'Моите прегледи', fn: () => renderTable('appointments', '/api/appointments', ['date', 'treatment', 'price', 'paidByNzok', 'patient.name', 'diagnosis.name'], true, currentId) });
+            items.push({ id: 'appointments', label: 'Моите прегледи', fn: () => renderTable('appointments', '/api/appointments', ['date', 'treatment', 'additionalInfo', 'price', 'paidByNzok', 'patient.name', 'diagnosis.name'], true, currentId) });
             items.push({ id: 'sickLeaves', label: 'Болнични', fn: () => renderTable('sickLeaves', '/api/sick-leaves', ['startDate', 'durationDays', 'patient.name'], true, currentId) });
         } else if (currentRole === 'ROLE_PATIENT') {
-            items.push({ id: 'myAppointments', label: 'Моите прегледи', fn: () => renderTable('appointments', '/api/appointments/me', ['date', 'treatment', 'price', 'paidByNzok', 'doctor.name', 'diagnosis.name'], false) });
+            items.push({ id: 'myAppointments', label: 'Моите прегледи', fn: () => renderTable('appointments', '/api/appointments/me', ['date', 'treatment', 'additionalInfo', 'price', 'paidByNzok', 'doctor.name', 'diagnosis.name'], false) });
             items.push({ id: 'myDiagnoses', label: 'Моите диагнози', fn: () => renderTable('diagnoses', '/api/diagnoses/me', ['name', 'description'], false) });
             items.push({ id: 'mySickLeaves', label: 'Моите болнични', fn: () => renderTable('sickLeaves', '/api/sick-leaves/me', ['startDate', 'durationDays', 'doctor.name'], false) });
         }
@@ -247,6 +247,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="welcome-card" onclick="document.querySelectorAll('#navMenu a')[1].click()"><div class="icon">📋</div><h3>Моите прегледи</h3><p>История на прегледите</p></div>
                 <div class="welcome-card" onclick="document.querySelectorAll('#navMenu a')[2].click()"><div class="icon">🏥</div><h3>Моите диагнози</h3><p>Поставени диагнози</p></div>
                 <div class="welcome-card" onclick="document.querySelectorAll('#navMenu a')[3].click()"><div class="icon">📄</div><h3>Моите болнични</h3><p>Болнични листове</p></div>
+                <div class="welcome-card" style="border: 2px solid var(--danger); background: var(--danger-bg);" onclick="testSecurity()">
+                    <div class="icon">🔒</div><h3 style="color:var(--danger)">Тест Защита</h3><p style="color:var(--text-secondary)">Опит за достъп до чужди данни</p>
+                </div>
             `;
         }
         mainContent.innerHTML = `<h2 style="font-size:1.5rem;margin-bottom:0.5rem">Добре дошли, ${currentUser}!</h2><p style="color:var(--text-secondary);margin-bottom:1.5rem">Изберете секция от менюто или от картите по-долу.</p><div class="welcome-grid">${cards}</div>`;
@@ -280,7 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    const colLabels = {'name':'Име','uin':'УИН','specialty':'Специалност','generalPractitioner':'Личен лекар','egn':'ЕГН','insured':'Осигурен','description':'Описание','date':'Дата','treatment':'Лечение','price':'Цена','paidByNzok':'НЗОК','startDate':'Начало','durationDays':'Дни','patient.name':'Пациент','doctor.name':'Лекар','diagnosis.name':'Диагноза'};
+    const colLabels = {'name':'Име','uin':'УИН','specialty':'Специалност','generalPractitioner':'Личен Лекар','egn':'ЕГН','insured':'Осигурен','description':'Описание','date':'Дата','treatment':'Лечение','additionalInfo':'Доп. Инфо','price':'Цена','paidByNzok':'НЗОК','startDate':'Начало','durationDays':'Дни','patient.name':'Пациент','doctor.name':'Лекар','diagnosis.name':'Диагноза'};
     const entityLabels = {'doctors':'Лекари','patients':'Пациенти','diagnoses':'Диагнози','appointments':'Прегледи','sickLeaves':'Болнични'};
 
     async function renderTable(entityName, url, columns, canEdit = true, doctorIdFilter = null) {
@@ -297,6 +300,8 @@ document.addEventListener('DOMContentLoaded', () => {
             let html = '';
             if (canEdit && currentRole !== 'ROLE_PATIENT') {
                 html += `<button class="btn-primary" onclick="openModal('${entityName}')" style="margin-bottom:1rem;">Добави Нов</button>`;
+            } else if (currentRole === 'ROLE_PATIENT' && entityName === 'appointments') {
+                html += `<button class="btn-primary" onclick="openModal('bookAppointment')" style="margin-bottom:1rem;">Запази час за преглед</button>`;
             }
 
             if (data.length === 0) {
@@ -304,7 +309,8 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 html += '<table><tr>';
                 columns.forEach(col => html += `<th>${colLabels[col] || col}</th>`);
-                if (canEdit && currentRole !== 'ROLE_PATIENT') html += '<th>Действия</th>';
+                const showActions = (canEdit && currentRole !== 'ROLE_PATIENT') || (currentRole === 'ROLE_PATIENT' && entityName === 'appointments');
+                if (showActions) html += '<th>Действия</th>';
                 html += '</tr>';
 
                 data.forEach(row => {
@@ -314,11 +320,24 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (typeof val === 'boolean') val = val ? 'Да' : 'Не';
                         html += `<td>${val || ''}</td>`;
                     });
-                    if (canEdit && currentRole !== 'ROLE_PATIENT') {
-                        html += `<td>
-                            <button onclick='editRecord("${entityName}", ${JSON.stringify(row).replace(/'/g, "&apos;")})'>Редактирай</button>
-                            <button onclick='deleteRecord("${entityName}", ${row.id})' style="background:rgba(239,68,68,0.15);color:#ef4444">Изтрий</button>
-                        </td>`;
+                    if (showActions) {
+                        html += `<td>`;
+                        if (canEdit && currentRole !== 'ROLE_PATIENT') {
+                            let editBtnText = entityName === 'appointments' ? 'Попълни Диагноза / Цена' : 'Редактиране';
+                            html += `
+                                <button onclick='editRecord("${entityName}", ${JSON.stringify(row).replace(/'/g, "&apos;")})'>${editBtnText}</button>
+                                <button onclick='deleteRecord("${entityName}", ${row.id})' style="background:rgba(239,68,68,0.15);color:#ef4444">Изтрий</button>
+                            `;
+                        } else if (currentRole === 'ROLE_PATIENT' && entityName === 'appointments') {
+                            if (!row.paidByNzok && row.price > 0 && !row.paid) {
+                                html += `<button onclick='payAppointment(${row.id})' style="background:var(--success);color:white;border:none;">Плати (${row.price} лв.)</button>`;
+                            } else if (row.paid) {
+                                html += `<span style="color:var(--success);font-weight:600;font-size:0.85rem;">Платено</span>`;
+                            } else {
+                                html += `<span style="color:var(--text-muted);font-size:0.85rem;">Безплатно</span>`;
+                            }
+                        }
+                        html += `</td>`;
                     }
                     html += '</tr>';
                 });
@@ -340,12 +359,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    window.testSecurity = async () => {
+        try {
+            await fetchApi('/api/appointments', 'GET');
+            alert('Грешка: Системата допусна пациента до всички прегледи!');
+        } catch (e) {
+            alert('УСПЕШНА ЗАЩИТА!\n\nСървърът блокира опита за хакване и върна грешка 403 (Forbidden).\n\nСъобщение от бекенда:\n' + e.message);
+        }
+    }
+
+    window.payAppointment = async (id) => {
+        if (!confirm('Потвърждавате ли плащането?')) return;
+        try {
+            await fetchApi(`/api/appointments/${id}/pay`, 'POST');
+            alert('Успешно плащане!');
+            document.querySelector('#navMenu a.active').click();
+        } catch (e) {
+            alert('Грешка при плащане: ' + e.message);
+        }
+    }
+
     window.openModal = async (entity, data = null) => {
         currentEditId = data ? data.id : null;
         modalTitle.textContent = data ? 'Редактиране' : 'Добавяне';
         modalFormFields.innerHTML = 'Зареждане...';
         formModal.classList.remove('hidden');
 
+        const today = new Date().toISOString().split('T')[0];
         let html = '';
         if (entity === 'doctors') {
             html += `
@@ -376,23 +416,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetchApi('/api/patients'), fetchApi('/api/doctors'), fetchApi('/api/diagnoses')
             ]);
             html += `
-                <div class="input-group"><label>Дата</label><input type="date" id="appDate" value="${data ? data.date : ''}" required></div>
-                <div class="input-group"><label>Лечение</label><input type="text" id="appTreatment" value="${data ? data.treatment : ''}"></div>
-                <div class="input-group"><label>Цена</label><input type="number" step="0.01" id="appPrice" value="${data ? data.price : ''}" required></div>
+                <div class="input-group"><label>Дата</label><input type="date" id="appDate" min="${today}" value="${data ? data.date : ''}" required></div>
+                <div class="input-group"><label>Лечение</label><input type="text" id="appTreatment" value="${data && data.treatment ? data.treatment : ''}"></div>
+                <div class="input-group"><label>Специфична информация (Доп. Инфо)</label><input type="text" id="appAdditionalInfo" value="${data && data.additionalInfo ? data.additionalInfo : ''}"></div>
+                <div class="input-group"><label>Цена (лв)</label><input type="number" step="1" min="0" id="appPrice" value="${data ? data.price : ''}" required></div>
                 <div class="input-group"><label>Пациент</label><select id="appPatient">
-                    ${patients.map(p => `<option value="${p.id}" ${data && data.patient.id === p.id ? 'selected' : ''}>${p.name}</option>`).join('')}
+                    ${patients.map(p => `<option value="${p.id}" ${data && data.patient.id === p.id ? 'selected' : ''}>${p.name} (${p.insured ? 'НЗОК' : 'Плаща кеш'})</option>`).join('')}
                 </select></div>
                 <div class="input-group"><label>Лекар</label><select id="appDoctor" ${currentRole === 'ROLE_DOCTOR' ? 'disabled' : ''}>
-                    ${doctors.map(d => `<option value="${d.id}" ${(data && data.doctor.id === d.id) || (currentRole === 'ROLE_DOCTOR' && currentId === d.id) ? 'selected' : ''}>${d.name}</option>`).join('')}
+                    ${doctors.map(d => `<option value="${d.id}" ${(data && data.doctor && data.doctor.id === d.id) || (currentRole === 'ROLE_DOCTOR' && currentId === d.id) ? 'selected' : ''}>${d.name}</option>`).join('')}
                 </select></div>
                 <div class="input-group"><label>Диагноза</label><select id="appDiagnosis">
-                    ${diagnoses.map(d => `<option value="${d.id}" ${data && data.diagnosis.id === d.id ? 'selected' : ''}>${d.name}</option>`).join('')}
+                    <option value="">-- Изберете диагноза (Опционално) --</option>
+                    ${diagnoses.map(d => `<option value="${d.id}" ${data && data.diagnosis && data.diagnosis.id === d.id ? 'selected' : ''}>${d.name}</option>`).join('')}
                 </select></div>
             `;
         } else if (entity === 'sickLeaves') {
             const [patients, doctors] = await Promise.all([fetchApi('/api/patients'), fetchApi('/api/doctors')]);
             html += `
-                <div class="input-group"><label>Начална дата</label><input type="date" id="slDate" value="${data ? data.startDate : ''}" required></div>
+                <div class="input-group"><label>Начална дата</label><input type="date" id="slDate" min="${today}" value="${data ? data.startDate : ''}" required></div>
                 <div class="input-group"><label>Продължителност (дни)</label><input type="number" min="1" id="slDays" value="${data ? data.durationDays : ''}" required></div>
                 <div class="input-group"><label>Пациент</label><select id="slPatient">
                     ${patients.map(p => `<option value="${p.id}" ${data && data.patient.id === p.id ? 'selected' : ''}>${p.name}</option>`).join('')}
@@ -401,6 +443,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${doctors.map(d => `<option value="${d.id}" ${(data && data.doctor.id === d.id) || (currentRole === 'ROLE_DOCTOR' && currentId === d.id) ? 'selected' : ''}>${d.name}</option>`).join('')}
                 </select></div>
             `;
+        } else if (entity === 'bookAppointment') {
+            const doctors = await fetchApi('/api/doctors');
+            html += `
+                <div class="input-group"><label>Дата</label><input type="date" id="bookDate" min="${today}" required></div>
+                <div class="input-group"><label>Лекар</label><select id="bookDoctor" required>
+                    <option value="">-- Изберете лекар --</option>
+                    ${doctors.map(d => `<option value="${d.id}">${d.name} (${d.specialty})</option>`).join('')}
+                </select></div>
+            `;
+            currentEntity = 'bookAppointment';
         }
         modalFormFields.innerHTML = html;
     }
@@ -435,11 +487,13 @@ document.addEventListener('DOMContentLoaded', () => {
             payload = {
                 date: document.getElementById('appDate').value,
                 treatment: document.getElementById('appTreatment').value,
+                additionalInfo: document.getElementById('appAdditionalInfo').value,
                 price: parseFloat(document.getElementById('appPrice').value),
                 patient: { id: parseInt(document.getElementById('appPatient').value) },
-                doctor: { id: parseInt(document.getElementById('appDoctor').value) },
-                diagnosis: { id: parseInt(document.getElementById('appDiagnosis').value) }
+                doctor: { id: parseInt(document.getElementById('appDoctor').value) }
             };
+            const diagVal = document.getElementById('appDiagnosis').value;
+            if (diagVal) payload.diagnosis = { id: parseInt(diagVal) };
         } else if (currentEntity === 'sickLeaves') {
             payload = {
                 startDate: document.getElementById('slDate').value,
@@ -447,6 +501,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 patient: { id: parseInt(document.getElementById('slPatient').value) },
                 doctor: { id: parseInt(document.getElementById('slDoctor').value) }
             };
+        } else if (currentEntity === 'bookAppointment') {
+            payload = {
+                date: document.getElementById('bookDate').value,
+                doctorId: parseInt(document.getElementById('bookDoctor').value)
+            };
+            url = '/api/appointments/book';
+            method = 'POST';
         }
 
         try {
@@ -474,11 +535,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="glass-panel" style="grid-column: span 2;">
                     <h3>Справки с параметри</h3>
                     <div style="display:flex; gap:1rem; margin:1rem 0; flex-wrap: wrap;">
-                        <input type="number" id="searchDocId" placeholder="ID на лекар (за прегледи/пациенти)" style="flex:1; min-width:200px;">
-                        <input type="date" id="searchStart" style="flex:1;">
-                        <input type="date" id="searchEnd" style="flex:1;">
-                        <input type="number" id="searchDiagId" placeholder="ID на диагноза" style="flex:1; min-width:150px;">
-                        <input type="number" id="searchPatId" placeholder="ID на пациент" style="flex:1; min-width:150px;">
+                        <select id="searchDocId" class="styled-select" style="flex:1; min-width:200px;">
+                            <option value="">-- Изберете лекар --</option>
+                        </select>
+                        <input type="date" id="searchStart" style="flex:1;" title="Начална дата">
+                        <input type="date" id="searchEnd" style="flex:1;" title="Крайна дата">
+                        <select id="searchDiagId" class="styled-select" style="flex:1; min-width:150px;">
+                            <option value="">-- Изберете диагноза --</option>
+                        </select>
+                        <select id="searchPatId" class="styled-select" style="flex:1; min-width:150px;">
+                            <option value="">-- Изберете пациент --</option>
+                        </select>
                         <button onclick="window.doStatsSearch()" class="btn-primary" style="width: auto;">Търси</button>
                     </div>
                     <div id="searchRes"></div>
@@ -487,15 +554,28 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         try {
-            const [diagRes, totalRes, mSickRes, dSickRes, docsInfo, patCountGp, appCountDoc] = await Promise.all([
+            const [diagRes, totalRes, mSickRes, dSickRes, docsInfo, patCountGp, appCountDoc, doctorsList, diagnosesList, patientsList] = await Promise.all([
                 fetchApi('/api/stats/most-common-diagnosis'),
                 fetchApi('/api/stats/total-paid-by-patients'),
                 fetchApi('/api/stats/month-most-sick-leaves'),
                 fetchApi('/api/stats/doctor-most-sick-leaves'),
                 fetchApi('/api/stats/paid-by-patients-grouped-by-doctor'),
                 fetchApi('/api/stats/patients-count-by-gp'),
-                fetchApi('/api/stats/appointments-count-by-doctor')
+                fetchApi('/api/stats/appointments-count-by-doctor'),
+                fetchApi('/api/doctors'),
+                fetchApi('/api/diagnoses'),
+                fetchApi('/api/patients')
             ]);
+
+            const docSelect = document.getElementById('searchDocId');
+            if (doctorsList) doctorsList.forEach(d => docSelect.insertAdjacentHTML('beforeend', `<option value="${d.id}">${d.name} (${d.specialty})</option>`));
+
+            const diagSelect = document.getElementById('searchDiagId');
+            if (diagnosesList) diagnosesList.forEach(d => diagSelect.insertAdjacentHTML('beforeend', `<option value="${d.id}" data-desc="${d.description || ''}">${d.name}</option>`));
+
+            const patSelect = document.getElementById('searchPatId');
+            if (patientsList) patientsList.forEach(p => patSelect.insertAdjacentHTML('beforeend', `<option value="${p.id}">${p.name} (ЕГН: ${p.egn})</option>`));
+
 
             document.getElementById('stat1').innerHTML = `<h3>Най-честа диагноза</h3><p style="color:var(--primary); font-size:1.5rem">${diagRes ? diagRes.name : 'Няма данни'}</p>`;
             document.getElementById('stat2').innerHTML = `<h3>Общо платено от пациенти</h3><p style="color:var(--primary); font-size:1.5rem">${totalRes || 0} лв.</p>`;
@@ -504,19 +584,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let docsHtml = `<h3>Приходи по лекар</h3><ul>`;
             if (docsInfo && docsInfo.length) {
-                docsInfo.forEach(d => docsHtml += `<li>Д-р ${d.doctor}: ${d.sum} лв.</li>`);
+                docsInfo.forEach(d => docsHtml += `<li>${d.doctor}: ${d.sum} лв.</li>`);
             } else docsHtml += '<li>Няма данни</li>';
             document.getElementById('stat5').innerHTML = docsHtml + '</ul>';
 
             let patGpHtml = `<h3>Брой пациенти при личен лекар</h3><ul>`;
             if (patCountGp && patCountGp.length) {
-                patCountGp.forEach(p => patGpHtml += `<li>Д-р ${p.doctor}: ${p.count} пациенти</li>`);
+                patCountGp.forEach(p => patGpHtml += `<li>${p.doctor}: ${p.count} пациенти</li>`);
             } else patGpHtml += '<li>Няма данни</li>';
             document.getElementById('stat6').innerHTML = patGpHtml + '</ul>';
 
             let appDocHtml = `<h3>Брой посещения при лекар</h3><ul>`;
             if (appCountDoc && appCountDoc.length) {
-                appCountDoc.forEach(a => appDocHtml += `<li>Д-р ${a.doctor}: ${a.count} посещения</li>`);
+                appCountDoc.forEach(a => appDocHtml += `<li>${a.doctor}: ${a.count} посещения</li>`);
             } else appDocHtml += '<li>Няма данни</li>';
             document.getElementById('stat7').innerHTML = appDocHtml + '</ul>';
 
@@ -544,33 +624,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (end) url += `endDate=${end}`;
 
                 const data = await fetchApi(url);
-                html += '<h4 style="margin-top:1rem;color:var(--primary);">Прегледи:</h4><ul>';
-                if (data.length === 0) html += '<li>Няма намерени</li>';
-                else data.forEach(a => html += `<li>${a.date} - ${a.patient.name} (${a.diagnosis.name})</li>`);
+                html += '<h4 style="margin-top:1rem;color:var(--primary);">Намерени прегледи (по лекар/период):</h4><ul>';
+                if (data.length === 0) html += '<li>Не са открити прегледи за тези критерии.</li>';
+                else data.forEach(a => {
+                    const payStatus = a.paidByNzok ? '<span style="color:var(--success);font-weight:600;">(Безплатно / НЗОК)</span>' : `<span style="color:var(--danger);font-weight:600;">(Платено от пациента: ${a.price} лв.)</span>`;
+                    html += `<li>На дата <strong>${a.date}</strong> пациентът <strong>${a.patient.name}</strong> е прегледан от лекар <strong>${a.doctor.name}</strong> с поставена диагноза: <strong>${a.diagnosis.name}</strong>. ${payStatus}</li>`;
+                });
                 html += '</ul>';
 
                 if (docId && !start && !end) {
                     const gpData = await fetchApi(`/api/stats/patients-by-gp/${docId}`);
-                    html += '<h4 style="margin-top:1rem;color:var(--primary);">Пациенти на този личен лекар:</h4><ul>';
-                    if (gpData.length === 0) html += '<li>Няма намерени</li>';
-                    else gpData.forEach(p => html += `<li>${p.name} (ЕГН: ${p.egn})</li>`);
+                    html += '<h4 style="margin-top:1rem;color:var(--primary);">Пациенти, записани при този личен лекар:</h4><ul>';
+                    if (gpData.length === 0) html += '<li>Този лекар няма записани пациенти.</li>';
+                    else gpData.forEach(p => html += `<li>Пациент: <strong>${p.name}</strong> (ЕГН: ${p.egn})</li>`);
                     html += '</ul>';
                 }
             }
 
             if (diagId) {
                 const data = await fetchApi(`/api/stats/patients-by-diagnosis/${diagId}`);
-                html += '<h4 style="margin-top:1rem;color:var(--primary);">Пациенти с тази диагноза:</h4><ul>';
-                if (data.length === 0) html += '<li>Няма намерени</li>';
-                else data.forEach(p => html += `<li>${p.name} (ЕГН: ${p.egn})</li>`);
+                
+                const diagSelect = document.getElementById('searchDiagId');
+                const selectedOption = diagSelect.options[diagSelect.selectedIndex];
+                const diagName = selectedOption.text;
+                const diagDesc = selectedOption.getAttribute('data-desc');
+                
+                html += '<h4 style="margin-top:1rem;color:var(--primary);">Списък с пациенти, на които е поставена избраната диагноза:</h4><ul>';
+                if (data.length === 0) html += '<li>Няма пациенти с тази диагноза.</li>';
+                else data.forEach(p => html += `<li>Пациент: <strong>${p.name}</strong> (ЕГН: ${p.egn}) - Диагноза: <strong>${diagName}</strong> <em>(${diagDesc})</em></li>`);
                 html += '</ul>';
             }
 
             if (patId) {
                 const data = await fetchApi(`/api/stats/patient-history/${patId}`);
-                html += '<h4 style="margin-top:1rem;color:var(--primary);">История на посещенията:</h4><ul>';
-                if (data.length === 0) html += '<li>Няма намерени</li>';
-                else data.forEach(a => html += `<li>${a.date} - Д-р ${a.doctor.name} (${a.diagnosis.name})</li>`);
+                html += '<h4 style="margin-top:1rem;color:var(--primary);">Медицинска история (прегледи) на избрания пациент:</h4><ul>';
+                if (data.length === 0) html += '<li>Този пациент все още няма предишни прегледи.</li>';
+                else data.forEach(a => {
+                    const payStatus = a.paidByNzok ? '<span style="color:var(--success);font-weight:600;">(Безплатно / НЗОК)</span>' : `<span style="color:var(--danger);font-weight:600;">(Платено от пациента: ${a.price} лв.)</span>`;
+                    html += `<li>На дата <strong>${a.date}</strong> пациентът <strong>${a.patient.name}</strong> е прегледан от лекар <strong>${a.doctor.name}</strong> с поставена диагноза: <strong>${a.diagnosis.name}</strong>. ${payStatus}</li>`;
+                });
                 html += '</ul>';
             }
 
