@@ -19,6 +19,8 @@ public class AppointmentDTO {
     @Min(value = 0, message = "Цената не може да бъде отрицателна")
     private java.math.BigDecimal price;
 
+    private boolean healthy;
+
     @NotNull(message = "Пациентът е задължителен")
     @Valid
     private EntityReference patient;
@@ -51,4 +53,7 @@ public class AppointmentDTO {
 
     public EntityReference getDiagnosis() { return diagnosis; }
     public void setDiagnosis(EntityReference diagnosis) { this.diagnosis = diagnosis; }
+
+    public boolean isHealthy() { return healthy; }
+    public void setHealthy(boolean healthy) { this.healthy = healthy; }
 }

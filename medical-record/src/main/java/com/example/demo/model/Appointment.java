@@ -46,6 +46,9 @@ public class Appointment {
     @Column(nullable = false)
     private boolean isPaid;
 
+    @Column(nullable = false)
+    private boolean healthy;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -75,4 +78,7 @@ public class Appointment {
 
     public boolean isPaid() { return isPaid; }
     public void setPaid(boolean paid) { isPaid = paid; }
+
+    public boolean isHealthy() { return healthy; }
+    public void setHealthy(boolean healthy) { this.healthy = healthy; }
 }

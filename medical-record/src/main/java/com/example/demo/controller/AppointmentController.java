@@ -27,23 +27,63 @@ public class AppointmentController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
-    public List<Appointment> getAll(org.springframework.security.core.Authentication authentication) {
-        if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-            return appointmentRepository.findAll();
+    public List<Appointment> getAll(
+            org.springframework.security.core.Authentication authentication,
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) String filter) {
+            
+        java.util.stream.Stream<Appointment> stream = appointmentRepository.findAll().stream();
+        
+        if (!authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            String username = authentication.getName();
+            stream = stream.filter(a -> a.getDoctor().getUser().getUsername().equals(username));
         }
-        String username = authentication.getName();
-        return appointmentRepository.findAll().stream()
-                .filter(a -> a.getDoctor().getUser().getUsername().equals(username))
-                .toList();
+        
+        java.time.LocalDate today = java.time.LocalDate.now();
+        if ("future".equalsIgnoreCase(filter)) {
+            stream = stream.filter(a -> a.getDate().isAfter(today));
+        } else if ("past".equalsIgnoreCase(filter)) {
+            stream = stream.filter(a -> a.getDate().isBefore(today));
+        } else if ("today".equalsIgnoreCase(filter)) {
+            stream = stream.filter(a -> a.getDate().equals(today));
+        }
+
+        if ("asc".equalsIgnoreCase(sort)) {
+            stream = stream.sorted(java.util.Comparator.comparing(Appointment::getDate));
+        } else if ("desc".equalsIgnoreCase(sort)) {
+            stream = stream.sorted(java.util.Comparator.comparing(Appointment::getDate).reversed());
+        }
+
+        return stream.toList();
     }
 
     @GetMapping("/me")
     @PreAuthorize("hasRole('PATIENT')")
-    public List<Appointment> getMyAppointments(org.springframework.security.core.Authentication authentication) {
+    public List<Appointment> getMyAppointments(
+            org.springframework.security.core.Authentication authentication,
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) String filter) {
+            
         String username = authentication.getName();
-        return appointmentRepository.findAll().stream()
-                .filter(a -> a.getPatient().getUser().getUsername().equals(username))
-                .toList();
+        java.util.stream.Stream<Appointment> stream = appointmentRepository.findAll().stream()
+                .filter(a -> a.getPatient().getUser() != null && a.getPatient().getUser().getUsername().equals(username));
+
+        java.time.LocalDate today = java.time.LocalDate.now();
+        if ("future".equalsIgnoreCase(filter)) {
+            stream = stream.filter(a -> a.getDate().isAfter(today));
+        } else if ("past".equalsIgnoreCase(filter)) {
+            stream = stream.filter(a -> a.getDate().isBefore(today));
+        } else if ("today".equalsIgnoreCase(filter)) {
+            stream = stream.filter(a -> a.getDate().equals(today));
+        }
+
+        if ("asc".equalsIgnoreCase(sort)) {
+            stream = stream.sorted(java.util.Comparator.comparing(Appointment::getDate));
+        } else if ("desc".equalsIgnoreCase(sort)) {
+            stream = stream.sorted(java.util.Comparator.comparing(Appointment::getDate).reversed());
+        }
+
+        return stream.toList();
     }
 
     @PostMapping("/book")
@@ -76,8 +116,12 @@ public class AppointmentController {
         appointment.setPrice(java.math.BigDecimal.ZERO);
         appointment.setTreatment("");
         appointment.setAdditionalInfo("");
+        
+        // [ЗДРАВНА КАСА] Логика: Ако пациентът е осигурен, прегледът се поема от НЗОК и автоматично се маркира като платен.
         appointment.setPaidByNzok(patient.isInsured());
         appointment.setPaid(patient.isInsured());
+        
+        appointment.setHealthy(false);
 
         return appointmentRepository.save(appointment);
     }
@@ -99,10 +143,13 @@ public class AppointmentController {
         
         appointment.setPatient(patient);
         
+        appointment.setHealthy(dto.isHealthy());
+        
         com.example.demo.model.Diagnosis diagnosis = new com.example.demo.model.Diagnosis();
         diagnosis.setId(dto.getDiagnosis().getId());
         appointment.setDiagnosis(diagnosis);
         
+        // [ЗДРАВНА КАСА] Логика: Автоматично покриване на прегледа от НЗОК (безплатно за пациента), ако има здравни осигуровки.
         appointment.setPaidByNzok(patient.isInsured());
         appointment.setPaid(patient.isInsured() || appointment.getPrice().compareTo(java.math.BigDecimal.ZERO) <= 0);
         return appointmentRepository.save(appointment);
@@ -124,12 +171,16 @@ public class AppointmentController {
         
         appointment.setPatient(patient);
         
+        appointment.setHealthy(dto.isHealthy());
+        
         com.example.demo.model.Diagnosis diagnosis = new com.example.demo.model.Diagnosis();
         diagnosis.setId(dto.getDiagnosis().getId());
         appointment.setDiagnosis(diagnosis);
         appointment.setTreatment(dto.getTreatment());
         appointment.setAdditionalInfo(dto.getAdditionalInfo());
         appointment.setPrice(dto.getPrice() != null ? dto.getPrice() : java.math.BigDecimal.ZERO);
+        
+        // [ЗДРАВНА КАСА] Логика: При редакция отново проверяваме осигуровките на пациента.
         appointment.setPaidByNzok(patient.isInsured());
         appointment.setPaid(patient.isInsured() || appointment.getPrice().compareTo(java.math.BigDecimal.ZERO) <= 0);
         
@@ -163,6 +214,8 @@ public class AppointmentController {
         return appointmentRepository.save(appointment);
     }
 
+    // [ЗАЩИТА] Методът, който не позволява на лекари да пипат (редактират/трият) прегледите на други лекари.
+    // Изключение се прави само за Админа, който има право на всичко.
     private void enforceDoctorOwnership(Long doctorId, org.springframework.security.core.Authentication authentication) {
         if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
             return;

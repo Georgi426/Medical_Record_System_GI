@@ -70,10 +70,18 @@ public class AuthController {
             if (user != null) {
                 if (role.equals("ROLE_DOCTOR")) {
                     Optional<Doctor> doctor = doctorRepository.findByUserId(user.getId());
-                    doctor.ifPresent(d -> response.setId(d.getId()));
+                    doctor.ifPresent(d -> {
+                        response.setId(d.getId());
+                        response.setName(d.getName());
+                    });
                 } else if (role.equals("ROLE_PATIENT")) {
                     Optional<Patient> patient = patientRepository.findByUserId(user.getId());
-                    patient.ifPresent(p -> response.setId(p.getId()));
+                    patient.ifPresent(p -> {
+                        response.setId(p.getId());
+                        response.setName(p.getName());
+                    });
+                } else if (role.equals("ROLE_ADMIN")) {
+                    response.setName("Администратор (" + user.getUsername() + ")");
                 }
             }
 

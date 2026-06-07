@@ -5,6 +5,7 @@ public class AuthResponse {
     private String role;
     private String message;
     private Long id;
+    private String name;
     
     public AuthResponse(String status, String role, String message) {
         this.status = status;
@@ -23,4 +24,7 @@ public class AuthResponse {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 }
